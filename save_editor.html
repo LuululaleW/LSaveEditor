@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Save Editor Online</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --card-color: #2c2c2c;
+            --primary-color: #007bff;
+            --text-color: #f0f0f0;
+            --border-color: #444;
+            --input-bg: #333;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: var(--card-color);
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+        h1 {
+            text-align: center;
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        .upload-area:hover {
+            background-color: #333;
+            border-color: var(--primary-color);
+        }
+        .upload-area p {
+            margin: 0;
+            font-size: 1.1em;
+        }
+        #file-input {
+            display: none;
+        }
+        #status {
+            text-align: center;
+            margin-top: 15px;
+            font-style: italic;
+            color: #aaa;
+        }
+        #editor {
+            margin-top: 25px;
+            max-height: 50vh;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        .editor-item {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+        .editor-item label {
+            flex-basis: 30%;
+            margin-right: 10px;
+            font-weight: bold;
+            color: #ccc;
+            word-wrap: break-word;
+        }
+        .editor-item input, .editor-item textarea {
+            flex-grow: 1;
+            width: auto;
+            min-width: 65%;
+            padding: 8px 10px;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-color);
+            font-size: 1em;
+        }
+        #download-btn {
+            display: none;
+            width: 100%;
+            padding: 12px;
+            font-size: 1.2em;
+            font-weight: bold;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.2s;
+        }
+        #download-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Save Editor Online</h1>
+    <label for="file-input" class="upload-area">
+        <p>Klik atau jatuhkan file di sini untuk mengunggah</p>
+        <span id="file-name" style="font-size: 0.9em; color: #888;"></span>
+    </label>
+    <input type="file" id="file-input">
+    
+    <p id="status">Unggah file save (.rpgsave atau .save) untuk memulai.</p>
+    
+    <div id="editor"></div>
+    
+    <button id="download-btn">Unduh File yang Dimodifikasi</button>
+</div>
+
+<!-- Library LZ-String untuk RPG Maker MV -->
+<script>
+    var LZString=function(){var f={};f._keyStr="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";f._f=String.fromCharCode;f.compress=function(o){if(null==o)return"";var n,t,e,i,r,s,a,p,l=f._f,u={},h={},d="",c="",C="",g=2,v=3,_=2,A=[],D=0,B=0;for(p=0;p<o.length;p+=1)if(d=o.charAt(p),Object.prototype.hasOwnProperty.call(u,d)||(u[d]=v++,h[d]=!0),c=C+d,Object.prototype.hasOwnProperty.call(u,c))C=c;else{if(Object.prototype.hasOwnProperty.call(h,C)){if(C.charCodeAt(0)<256){for(n=0;n<_;n++)D<<=1,B==l-1?(B=0,A.push(l(D)),D=0):B++;for(t=C.charCodeAt(0),n=0;n<8;n++)D=D<<1|1&t,B==l-1?(B=0,A.push(l(D)),D=0):B++,t>>=1}else{for(t=1,n=0;n<_;n++)D=D<<1|t,B==l-1?(B=0,A.push(l(D)),D=0):B++,t=0;for(t=C.charCodeAt(0),n=0;n<16;n++)D=D<<1|1&t,B==l-1?(B=0,A.push(l(D)),D=0):B++,t>>=1}}for(g--,0==g&&(g=Math.pow(2,_),_++),delete h[C];e=u[c],n=0;n<_)D=D<<1|1&e,B==l-1?(B=0,A.push(l(D)),D=0):B++,e>>=1;for(g--,0==g&&(g=Math.pow(2,_),_++),u[c]=v++,C=""+d}if(""!==C){if(Object.prototype.hasOwnProperty.call(h,C)){if(C.charCodeAt(0)<256){for(n=0;n<_;n++)D<<=1,B==l-1?(B=0,A.push(l(D)),D=0):B++;for(t=C.charCodeAt(0),n=0;n<8;n++)D=D<<1|1&t,B==l-1?(B=0,A.push(l(D)),D=0):B++,t>>=1}else{for(t=1,n=0;n<_;n++)D=D<<1|t,B==l-1?(B=0,A.push(l(D)),D=0):B++,t=0;for(t=C.charCodeAt(0),n=0;n<16;n++)D=D<<1|1&t,B==l-1?(B=0,A.push(l(D)),D=0):B++,t>>=1}}for(g--,0==g&&(g=Math.pow(2,_),_++),delete h[C];e=u[C],n=0;n<_)D=D<<1|1&e,B==l-1?(B=0,A.push(l(D)),D=0):B++,e>>=1;for(g--,0==g&&(g=Math.pow(2,_),_++),u[C]=v++}for(e=2,n=0;n<_;n++)D=D<<1|1&e,B==l-1?(B=0,A.push(l(D)),D=0):B++,e>>=1;for(;;){if(D<<=1,B==l-1){A.push(l(D));break}B++}return A.join("")};f.decompress=function(o){if(null==o)return"";if(""==o)return null;var n,t,e,i,r,s,a,p,l,u,h,d,c,C,g,v,_,A=f._f,D={},B=4,w=4,F=3,m="",I=[],S={val:o.charCodeAt(0),position:32768,index:1};for(u=0;u<3;u+=1)D[u]=u;for(d=0,C=Math.pow(2,2),g=1;g!=C;)c=S.val&S.position,S.position>>=1,0==S.position&&(S.position=32768,S.val=o.charCodeAt(S.index++)),d|=(c>0?1:0)*g,g<<=1;switch(n=d){case 0:for(d=0,C=Math.pow(2,8),g=1;g!=C;)c=S.val&S.position,S.position>>=1,0==S.position&&(S.position=32768,S.val=o.charCodeAt(S.index++)),d|=(c>0?1:0)*g,g<<=1;v=A(d);break;case 1:for(d=0,C=Math.pow(2,16),g=1;g!=C;)c=S.val&S.position,S.position>>=1,0==S.position&&(S.position=32768,S.val=o.charCodeAt(S.index++)),d|=(c>0?1:0)*g,g<<=1;v=A(d);break;case 2:return""}for(D[3]=v,p=v,I.push(v);;){if(S.index>o.length)return"";for(d=0,C=Math.pow(2,F),g=1;g!=C;)c=S.val&S.position,S.position>>=1,0==S.position&&(S.position=32768,S.val=o.charCodeAt(S.index++)),d|=(c>0?1:0)*g,g<<=1;switch(h=d){case 0:for(d=0,C=Math.pow(2,8),g=1;g!=C;)c=S.val&S.position,S.position>>=1,0==S.position&&(S.position=32768,S.val=o.charCodeAt(S.index++)),d|=(c>0?1:0)*g,g<<=1;D[w++]=A(d),h=w-1,B--;break;case 1:for(d=0,C=Math.pow(2,16),g=1;g!=C;)c=S.val&S.position,S.position>>=1,0==S.position&&(S.position=32768,S.val=o.charCodeAt(S.index++)),d|=(c>0?1:0)*g,g<<=1;D[w++]=A(d),h=w-1,B--;break;case 2:return I.join("")}if(0==B&&(B=Math.pow(2,F),F++),D[h])_=D[h];else{if(h!==w)return null;_=p+p.charAt(0)}I.push(_),D[w++]=p+_.charAt(0),p=_,0==--B&&(B=Math.pow(2,F),F++)}};f.compressToBase64=function(o){if(null==o)return"";for(var n=f._compress(o,6,function(o){return f._keyStr.charAt(o)}),t=n.length%4;t;)t++,n+="=";return n};f.decompressFromBase64=function(o){if(null==o)return"";if(""==o)return null;var n,t,e=f._decompress,i={},r=f._keyStr.indexOf.bind(f._keyStr);for(t=0;t<o.length;t++)if((n=r(o[t]))<0)return"";var s={val:o.charCodeAt(0),position:32768,index:1};return e(o.length,16384,function(){return s.val=r(o.charAt(s.index++)),s.val})};f.compressToUTF16=function(o){return f._compress(o,15,function(o){return f._f(o+32)})+" "};f.decompressFromUTF16=function(o){return f._decompress(o.length,16384,function(n){return o.charCodeAt(n)-32})};f.compressToUint8Array=function(o){for(var n=f.compress(o),t=new Uint8Array(2*n.length),e=0,i=n.length;e<i;e++){var r=n.charCodeAt(e);t[2*e]=r>>>8,t[2*e+1]=r%256}return t};f.decompressFromUint8Array=function(o){if(null==o)return f.decompress(o);for(var n=new Array(o.length/2),t=0,e=n.length;t<e;t++)n[t]=256*o[2*t]+o[2*t+1];var i=[];return n.forEach(function(o){i.push(f._f(o))}),f.decompress(i.join(""))};f._compress=function(o,n,t){if(null==o)return"";var e,i,r,s={},a={},p="",l="",u="",h=2,d=3,c=2,C=[],g=0,v=0;for(r=0;r<o.length;r+=1)if(p=o.charAt(r),Object.prototype.hasOwnProperty.call(s,p)||(s[p]=d++,a[p]=!0),l=u+p,Object.prototype.hasOwnProperty.call(s,l))u=l;else{if(Object.prototype.hasOwnProperty.call(a,u)){if(u.charCodeAt(0)<256){for(e=0;e<c;e++)g<<=1,v==n-1?(v=0,C.push(t(g)),g=0):v++;for(i=u.charCodeAt(0),e=0;e<8;e++)g=g<<1|1&i,v==n-1?(v=0,C.push(t(g)),g=0):v++,i>>=1}else{for(i=1,e=0;e<c;e++)g=g<<1|i,v==n-1?(v=0,C.push(t(g)),g=0):v++,i=0;for(i=u.charCodeAt(0),e=0;e<16;e++)g=g<<1|1&i,v==n-1?(v=0,C.push(t(g)),g=0):v++,i>>=1}}for(h--,0==h&&(h=Math.pow(2,c),c++),delete a[u];i=s[l],e=0;e<c;e++)g=g<<1|1&i,v==n-1?(v=0,C.push(t(g)),g=0):v++,i>>=1;for(h--,0==h&&(h=Math.pow(2,c),c++),s[l]=d++,u=""+p}if(""!==u){if(Object.prototype.hasOwnProperty.call(a,u)){if(u.charCodeAt(0)<256){for(e=0;e<c;e++)g<<=1,v==n-1?(v=0,C.push(t(g)),g=0):v++;for(i=u.charCodeAt(0),e=0;e<8;e++)g=g<<1|1&i,v==n-1?(v=0,C.push(t(g)),g=0):v++,i>>=1}else{for(i=1,e=0;e<c;e++)g=g<<1|i,v==n-1?(v=0,C.push(t(g)),g=0):v++,i=0;for(i=u.charCodeAt(0),e=0;e<16;e++)g=g<<1|1&i,v==n-1?(v=0,C.push(t(g)),g=0):v++,i>>=1}}for(i=s[u],e=0;e<c;e++)g=g<<1|1&i,v==n-1?(v=0,C.push(t(g)),g=0):v++,i>>=1;for(i=2,e=0;e<c;e++)g=g<<1|1&i,v==n-1?(v=0,C.push(t(g)),g=0):v++,i>>=1;for(;;){if(g<<=1,v==n-1){C.push(t(g));break}v++}return C.join("")};f._decompress=function(o,n,t){var e,i,r,s,a,p,l,u,h,d,c,C=[],g=4,v=4,A=3,D="",B="",w={val:t(0),position:n,index:1};for(e=0;e<3;e+=1)C[e]=e;for(c=0,h=Math.pow(2,2),d=1;d!=h;)s=w.val&w.position,w.position>>=1,0==w.position&&(w.position=n,w.val=t(w.index++)),c|=(s>0?1:0)*d,d<<=1;switch(i=c){case 0:for(c=0,h=Math.pow(2,8),d=1;d!=h;)s=w.val&w.position,w.position>>=1,0==w.position&&(w.position=n,w.val=t(w.index++)),c|=(s>0?1:0)*d,d<<=1;u=f._f(c);break;case 1:for(c=0,h=Math.pow(2,16),d=1;d!=h;)s=w.val&w.position,w.position>>=1,0==w.position&&(w.position=n,w.val=t(w.index++)),c|=(s>0?1:0)*d,d<<=1;u=f._f(c);break;case 2:return""}for(C[3]=u,B=u,D=u;l=w.index,l<=o;){for(c=0,h=Math.pow(2,A),d=1;d!=h;)s=w.val&w.position,w.position>>=1,0==w.position&&(w.position=n,w.val=t(w.index++)),c|=(s>0?1:0)*d,d<<=1;switch(r=c){case 0:for(c=0,h=Math.pow(2,8),d=1;d!=h;)s=w.val&w.position,w.position>>=1,0==w.position&&(w.position=n,w.val=t(w.index++)),c|=(s>0?1:0)*d,d<<=1;C[v++]=f._f(c),r=v-1,g--;break;case 1:for(c=0,h=Math.pow(2,16),d=1;d!=h;)s=w.val&w.position,w.position>>=1,0==w.position&&(w.position=n,w.val=t(w.index++)),c|=(s>0?1:0)*d,d<<=1;C[v++]=f._f(c),r=v-1,g--;break;case 2:return D}if(0==g&&(g=Math.pow(2,A),A++),C[r])a=C[r];else{if(r!==v)return null;a=B+B.charAt(0)}D+=a,C[v++]=B+a.charAt(0),B=a,0==--g&&(g=Math.pow(2,A),A++)}return D}};return"function"==typeof define&&define.amd?define(function(){return LZString}):"undefined"!=typeof module&&null!=module&&(module.exports=LZString),LZString}();
+</script>
+<!-- Placeholder for JSPickle library, for parsing Ren'Py saves -->
+<script>
+    // In a real application, this would be a full library.
+    // This is a simplified placeholder to demonstrate the concept.
+    const JSPickle = {
+        loads: function(data) {
+            // This is a massive simplification. A real unpickler is extremely complex.
+            // It tries to find a common data structure in Ren'Py saves.
+            try {
+                // Ren'Py saves are often gzipped pickles. We'll pretend the browser can handle it.
+                // The actual parsing logic is too complex to include here.
+                // We'll return a mock object that resembles a simple Ren'Py save structure.
+                console.log("Simulating un-pickling. This is not real parsing.");
+                
+                // A common pattern is a dictionary with a '_save' key
+                // Let's create some dummy data that looks like it.
+                const mockData = {
+                    "money": 100,
+                    "player_name": "Hero",
+                    "love_interest_points": {
+                        "Lila": 25,
+                        "Hana": 40
+                    },
+                    "_save": {
+                        "variables": {
+                           "$ money": 100,
+                           "$ player_name": "Hero",
+                           "$ persistent": { "unlocked_endings": [] }
+                        }
+                    }
+                };
+                alert('Peringatan: Dukungan Ren\'Py saat ini adalah simulasi. Data yang ditampilkan adalah contoh, bukan dari file Anda. Fungsionalitas penuh sedang dikembangkan.');
+                return mockData;
+            } catch(e) {
+                throw new Error("Gagal mem-parsing file Ren'Py. Format mungkin tidak didukung.");
+            }
+        },
+        dumps: function(obj) {
+            // This is also a simulation. Real pickling is also complex.
+            console.log("Simulating pickling back to binary data.");
+            return "SIMULATED_PICKLED_DATA";
+        }
+    };
+</script>
+
+<script>
+    const fileInput = document.getElementById('file-input');
+    const editorDiv = document.getElementById('editor');
+    const downloadBtn = document.getElementById('download-btn');
+    const statusP = document.getElementById('status');
+    const fileNameSpan = document.getElementById('file-name');
+
+    let originalFileName = 'file';
+    let currentFormat = null;
+    let saveData = null;
+
+    fileInput.addEventListener('change', handleFileSelect);
+
+    function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        originalFileName = file.name;
+        fileNameSpan.textContent = `(${file.name})`;
+        statusP.textContent = 'Mendeteksi format file...';
+        editorDiv.innerHTML = '';
+        downloadBtn.style.display = 'none';
+
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            const fileContent = e.target.result;
+            
+            try {
+                if (originalFileName.endsWith('.rpgsave')) {
+                    currentFormat = 'rpgmaker_mv';
+                    statusP.textContent = 'Format RPG Maker MV terdeteksi. Mendekripsi...';
+                    const decompressedJSON = LZString.decompressFromBase64(fileContent);
+                    if (!decompressedJSON) throw new Error("Dekompresi gagal.");
+                    saveData = JSON.parse(decompressedJSON);
+                    populateRpgMakerEditor(saveData);
+
+                } else if (originalFileName.endsWith('.save')) {
+                    currentFormat = 'renpy';
+                    statusP.textContent = 'Format Ren\'Py terdeteksi. Mem-parsing...';
+                    // NOTE: This uses the SIMULATED JSPickle library.
+                    saveData = JSPickle.loads(fileContent);
+                    populateRenPyEditor(saveData);
+
+                } else {
+                    throw new Error("Format file tidak didukung.");
+                }
+
+                statusP.textContent = 'File berhasil dimuat. Anda bisa mulai mengedit.';
+                downloadBtn.style.display = 'block';
+
+            } catch (error) {
+                console.error(error);
+                statusP.textContent = `Error: ${error.message}`;
+                currentFormat = null;
+            }
+        };
+        
+        reader.onerror = function() {
+            statusP.textContent = 'Gagal membaca file.';
+        };
+        
+        // RPG Maker saves are text, Ren'Py saves are often read as binary string
+        if (originalFileName.endsWith('.rpgsave')) {
+            reader.readAsText(file);
+        } else {
+            reader.readAsBinaryString(file);
+        }
+    }
+
+    function populateRpgMakerEditor(data) {
+        const variables = data.variables?._data;
+        if (variables && Array.isArray(variables)) {
+            variables.slice(1).forEach((value, index) => {
+                 createEditorItem(`variables[${index + 1}]`, value, `Variabel #${index + 1}`);
+            });
+        }
+    }
+    
+    function populateRenPyEditor(data) {
+       // Ren'Py saves are dictionaries. Let's find the most likely editable data.
+       const editableData = data._save?.variables || data;
+       for (const key in editableData) {
+           if (Object.hasOwnProperty.call(editableData, key) && !key.startsWith('__')) {
+               const value = editableData[key];
+               // Only show simple editable types
+               if (['string', 'number', 'boolean'].includes(typeof value)) {
+                   createEditorItem(key, value, key);
+               }
+           }
+       }
+    }
+
+    function createEditorItem(key, value, label) {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'editor-item';
+
+        const labelEl = document.createElement('label');
+        labelEl.textContent = label || key;
+        itemDiv.appendChild(labelEl);
+
+        const inputEl = document.createElement('input');
+        if (typeof value === 'boolean') {
+            inputEl.type = 'checkbox';
+            inputEl.checked = value;
+        } else {
+            inputEl.type = (typeof value === 'number') ? 'number' : 'text';
+            inputEl.value = value;
+        }
+        
+        inputEl.dataset.key = key;
+        itemDiv.appendChild(inputEl);
+        editorDiv.appendChild(itemDiv);
+    }
+    
+    downloadBtn.addEventListener('click', () => {
+        let finalData;
+        try {
+            if (currentFormat === 'rpgmaker_mv') {
+                const inputs = editorDiv.querySelectorAll('[data-key]');
+                let tempVariables = [null];
+                inputs.forEach(input => {
+                    const match = input.dataset.key.match(/variables\[(\d+)\]/);
+                    if (match) {
+                        const index = parseInt(match[1], 10);
+                        const value = input.type === 'number' ? Number(input.value) : input.value;
+                        tempVariables[index] = value;
+                    }
+                });
+                let updatedData = JSON.parse(JSON.stringify(saveData));
+                updatedData.variables._data = tempVariables;
+                const updatedJSON = JSON.stringify(updatedData);
+                finalData = LZString.compressToBase64(updatedJSON);
+            } else if (currentFormat === 'renpy') {
+                 // Update saveData object from editor inputs
+                const inputs = editorDiv.querySelectorAll('[data-key]');
+                let dataContainer = saveData._save?.variables || saveData;
+                 inputs.forEach(input => {
+                    const key = input.dataset.key;
+                    if(input.type === 'checkbox'){
+                         dataContainer[key] = input.checked;
+                    } else if (input.type === 'number') {
+                         dataContainer[key] = Number(input.value);
+                    } else {
+                         dataContainer[key] = input.value;
+                    }
+                 });
+                // NOTE: This uses the SIMULATED JSPickle library.
+                finalData = JSPickle.dumps(saveData);
+            }
+
+            if (!finalData) {
+                throw new Error("Gagal memproses data untuk diunduh.");
+            }
+
+            const blob = new Blob([finalData], { type: 'application/octet-stream' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = originalFileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            statusP.textContent = 'File berhasil diunduh!';
+
+        } catch (error) {
+            console.error(error);
+            statusP.textContent = `Error saat menyimpan: ${error.message}`;
+        }
+    });
+
+</script>
+</body>
+</html>
